@@ -15,18 +15,26 @@ def sort_csv_by_article_number(file, article_numbers):
     # Sort the dataframe by 'Article number'
     df_sorted = df_filtered.sort_values(by="Article number")
     
+    # Reorder columns to place 'Stock' after 'Article number'
+    if "Stock" in df_sorted.columns:
+        columns = ["Article number", "Stock"] + [col for col in df_sorted.columns if col not in ["Article number", "Stock"]]
+        df_sorted = df_sorted[columns]
+    
     return df_sorted
 
 def main():
     st.title("Article Number Sorter")
     
     uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
-    article_numbers = st.text_area("Enter article numbers (comma-separated)")
+    article_numbers = st.text_area("Enter article numbers (comma-separated)", key="article_input")
     
     if uploaded_file and article_numbers:
         sorted_df = sort_csv_by_article_number(uploaded_file, article_numbers)
         st.write("### Sorted Articles Table")
         st.dataframe(sorted_df)
+    
+    # Auto-update on text input
+    st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
