@@ -1,42 +1,32 @@
 import streamlit as st
 import os
-import subprocess
-import sys
+import shutil
 
-def get_python_scripts(directory):
-    """Returns a list of Python script filenames in the given directory."""
-    return [f for f in os.listdir(directory) if f.endswith(".py") and f != os.path.basename(__file__)]
+st.set_page_config(page_title="📜 Script Launcher", layout="wide")
 
-def run_script(script_name):
-    """Executes a selected Python script in a new subprocess."""
-    python_executable = sys.executable  # Gets the Python environment where Streamlit is running
-
-    try:
-        process = subprocess.Popen(
-            [python_executable, script_name], 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            text=True
-        )
-        stdout, stderr = process.communicate()
-
-        if stdout:
-            st.text_area("Output:", stdout, height=300)
-        if stderr:
-            st.text_area("Errors:", stderr, height=300, key="stderr")
-
-    except Exception as e:
-        st.error(f"Error running script: {e}")
-
-# Streamlit UI
 st.title("📜 Script Launcher")
 
-repo_dir = os.path.dirname(os.path.abspath(__file__))
+repo_dir = os.path.dirname(os.path.abspath(__file__))  # Directory of the current repo
+pages_dir = os.path.join(repo_dir, "pages")  # Directory for Streamlit pages
+
+# Ensure the "pages" directory exists
+if not os.path.exists(pages_dir):
+    os.makedirs(pages_dir)
+
+def get_python_scripts(directory):
+    """Returns a list of Python script filenames in the given directory (excluding itself and the main script)."""
+    return [f for f in os.listdir(directory) if f.endswith(".py") and f not in ["app.py", "main.py"]]
+
 scripts = get_python_scripts(repo_dir)
 
-if not scripts:
-    st.warning("No Python scripts found in the repository.")
-else:
-    selected_script = st.selectbox("Select a script to run:", scripts)
-    if st.button("Run Script"):
-        run_script(os.path.join(repo_dir, selected_script))
+# Generate pages dynamically
+for script in scripts:
+    script_path = os.path.join(repo_dir, script)
+    page_path = os.path.join(pages_dir, script)
+
+    # Copy each script into the "pages" directory so Streamlit treats them as separate pages
+    shutil.copy(script_path, page_path)
+
+st.success(f"📄 {len(scripts)} script pages created! Check the sidebar to navigate.")
+
+st.write("Select a script from the sidebar to execute.")
