@@ -26,15 +26,12 @@ def main():
     st.title("Article Number Sorter")
     
     uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
-    article_numbers = st.text_area("Enter article numbers (comma-separated)", key="article_input")
+    article_numbers = st.text_area("Enter article numbers (comma-separated)", key="article_input", on_change=st.experimental_rerun)
     
     if uploaded_file and article_numbers:
         sorted_df = sort_csv_by_article_number(uploaded_file, article_numbers)
         st.write("### Sorted Articles Table")
         st.dataframe(sorted_df)
-    
-    # Auto-update on text input
-    st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
