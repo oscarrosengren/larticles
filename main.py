@@ -5,7 +5,7 @@ import subprocess
 def get_python_scripts(directory):
     """Returns a list of Python script filenames in the given directory, excluding the main script."""
     main_script = os.path.basename(__file__)
-    return [f for f in os.listdir(directory) if f.endswith(".py") and f != main_script]
+    return [f for f in os.listdir(directory) if f.endswith(".py") and f not in [main_script, "main.py"]]
 
 def run_script(script_name):
     """Executes a selected Python script."""
