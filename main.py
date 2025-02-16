@@ -1,6 +1,14 @@
 import streamlit as st
 import pandas as pd
 
+REQUIRED_PACKAGES = ["streamlit", "pandas"]
+
+for package in REQUIRED_PACKAGES:
+    try:
+        __import__(package)
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
 def sort_csv_by_article_number(file, article_numbers):
     # Load the CSV file with UTF-16 encoding and tab delimiter
     df = pd.read_csv(file, encoding="UTF-16", delimiter="\t")
