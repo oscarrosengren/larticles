@@ -1,45 +1,26 @@
-import streamlit as st
-import pandas as pd
-
-
 def sort_csv_by_article_number(file, article_numbers):
-    # Load the CSV file with UTF-16 encoding and tab delimiter
-    df = pd.read_csv(file, encoding="UTF-16", delimiter="\t")
+    # Ensure the uploaded file is read as a file-like object
+    try:
+        df = pd.read_csv(file, encoding="utf-16", delimiter="\t", dtype={"Article number": str})
+    except Exception as e:
+        st.error(f"Error reading CSV file: {e}")
+        return pd.DataFrame()  # Return an empty dataframe in case of error
 
-    # Convert 'Article number' to string to preserve alphanumeric values
-    df["Article number"] = df["Article number"].astype(str)
+    # Ensure 'Article number' exists
+    if "Article number" not in df.columns:
+        st.error("The CSV file does not contain the 'Article number' column.")
+        return pd.DataFrame()
 
     # Process input article numbers as strings
     article_numbers = [num.strip() for num in article_numbers.split(",")]
-    df_filtered = df[df["Article number"].isin(article_numbers)]
 
-    # Sort the dataframe by 'Article number'
+    # Filter and sort data
+    df_filtered = df[df["Article number"].isin(article_numbers)].copy()
     df_sorted = df_filtered.sort_values(by="Article number")
 
-    # Reorder columns to place 'Stock' after 'Article number'
+    # Reorder columns if 'Stock' is present
     if "Stock" in df_sorted.columns:
-        columns = ["Article number", "Stock"] + \
-            [col for col in df_sorted.columns if col not in [
-                "Article number", "Stock"]]
+        columns = ["Article number", "Stock"] + [col for col in df_sorted.columns if col not in ["Article number", "Stock"]]
         df_sorted = df_sorted[columns]
 
     return df_sorted
-
-
-def main():
-    st.title("Article Number Sorter")
-
-    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
-    article_numbers = st.text_area(
-        "Enter article numbers (comma-separated)", key="article_input")
-
-    if uploaded_file and article_numbers:
-        sorted_df = sort_csv_by_article_number(uploaded_file, article_numbers)
-        st.write("### Sorted Articles Table")
-        st.dataframe(sorted_df)
-
-    # Remove the experimental rerun to avoid infinite loops
-    # Instead, rely on Streamlit's reactive updates
-
-if __name__ == "__main__":
-    main()
